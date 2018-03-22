@@ -94,11 +94,11 @@ rule bedtools_bed:
         resources: mem_mb   = 8
         message: "bedtools_bed {input}: {threads} threads / {resources.mem_mb}"
         shell:
-        """
-        module load bedtools
-        cd mapped_reads
-        bedtools bamtobed -i ${input} > {output}
-        """
+            """
+            module load bedtools
+            cd mapped_reads
+            bedtools bamtobed -i ${input} > {output}
+            """
 rule tagdirectory_homer:
         input:"Bed_Files/{chip}_sorted_rmdup.bed"
         output: "{chip}_sorted_rmdup"
@@ -108,11 +108,11 @@ rule tagdirectory_homer:
         mem_mb   = 8
         message: "tagdirectory_homer {input}: {threads} threads / {resources.mem_mb}"
         shell:
-        """
-        module load homer
-        cd Bed_Files
-        makeTagDirectory ${output}/ ${input} -format bed
-        """
+            """
+            module load homer
+            cd Bed_Files
+            makeTagDirectory ${output}/ ${input} -format bed
+            """
 rule bigwig_deeptools_1x:
     input:"mapped_reads/{chip}_sorted_rmdup.bam"
     output: "../DeepTools-BigWigs-1xDepth/{chip}_sorted_rmdup.SeqDepthNorm.bw"
@@ -121,11 +121,11 @@ rule bigwig_deeptools_1x:
     resources: mem_mb= 16
     message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem_mb}"
     shell:
-    """
-    module load deeptools
-    cd mapped_reads
-    bamCoverage --bam ${input} -of bigwig -o ${output} --scaleFactor 1 --binSize 10 --normalizeTo1x 2150570000 --ignoreForNormalization chrX chrM --extendReads 150 --centerReads --smoothLength 30
-    """
+        """
+        module load deeptools
+        cd mapped_reads
+        bamCoverage --bam ${input} -of bigwig -o ${output} --scaleFactor 1 --binSize 10 --normalizeTo1x 2150570000 --ignoreForNormalization chrX chrM --extendReads 150 --centerReads --smoothLength 30
+        """
 
 rule bigwig_deeptools_RPKM:
     input:"mapped_reads/{chip}_sorted_rmdup.bam"
@@ -136,8 +136,8 @@ rule bigwig_deeptools_RPKM:
     mem_mb= 16
     message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem_mb}"
     shell:
-    """
-    module load deeptools
-    cd mapped_reads
-    bamCoverage --bam ${input} -of bigwig -o ${output} --scaleFactor 1 --binSize 10 --normalizeUsingRPKM --ignoreForNormalization chrX chrM --extendReads 150 --centerReads --smoothLength 30
-    """
+        """
+        module load deeptools
+        cd mapped_reads
+        bamCoverage --bam ${input} -of bigwig -o ${output} --scaleFactor 1 --binSize 10 --normalizeUsingRPKM --ignoreForNormalization chrX chrM --extendReads 150 --centerReads --smoothLength 30
+        """
