@@ -22,11 +22,52 @@ Run: snakemake -s ChIP.snake
 #bash safe mode
 shell.executable("/bin/bash")
 shell.prefix("set -euo pipefail; ")
-configfile: "config.yaml"
+#configfile: "config.yaml"
 #
+from os.path import join
 
+# Globals ---------------------------------------------------------------------
+
+
+# Globals ---------------------------------------------------------------------
+
+# Full path to a FASTA file.
+GENOME = '/fdb/igenomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome.fa'
+
+# Full path to a folder that holds all of your FASTQ files.
+FASTQ_DIR = './Fastq-Files/'
+
+# A Snakemake regular expression matching the forward mate FASTQ files.
+SAMPLES, = glob_wildcards(join(FASTQ_DIR, '{sample,*.R1.fastq.gz'))
+
+# Patterns for the 1st mate and the 2nd mate using the 'sample' wildcard.
+PATTERN_R1 = '{sample}.R1.fastq.gz'
+#PATTERN_R2 = '{sample}.R2.fastq.gz'
+
+################################################################################################################
+
+# Rules -----------------------------------------------------------------------
+
+rule all:
+    input:
+        'test.txt'
+
+ruleorder: fastqc > clean_fastq > bowtie2_mapping > flagstat_bam > bedtools_bed > tagdirectory_homer > call_broad_peaks > bigwig_deeptools_1x > bigwig_deeptools_RPKM
+
+rule final:
+input:
+    expand("cleaned/{sample}_trimmed.fq.gz", sample=SAMPLES),
+            expand("qc/{sample}_fastqc.html", sample=SAMPLES),
+            expand("qc/{sample}_fastqc.zip", sample=SAMPLES),
+            expand("out/{sample}/{sample}_trimmed.sorted.bam", sample=SAMPLES),
+            expand("out/{sample}/{sample}_trimmed.sorted.bai", sample=SAMPLES),
+            expand("out/{sample}_vs_{frag}.bamcompare.bigwig", zip,sample=CASES,frag=CONTROLS),
+            expand("out/{sample}/{sample}_vs_{frag}_peaks.narrowPeak",zip,sample=CASES,frag=CONTROLS),
+    expand("out/{sample}/{sample}_vs_{frag}_peaks.broadPeak",zip,sample=CASES,frag=CONTROLS),
+
+################################################################################################################
 rule fastqc:
-    input:  "{chip}.fastq.gz"
+    input:  r1 = join(FASTQ_DIR, PATTERN_R1)
     output: "FQC-Report/{chip}_fastqc.zip", "FQC-Report/{chip}_fastqc.html"
     log:    "00log/{chip}_fastqc"
     threads: 8
@@ -41,7 +82,7 @@ rule fastqc:
 ## use trimmomatic to trim low quality bases and adaptors
 rule clean_fastq:
     input:   "{chip}.fastq.gz"
-    output:  clean_fastq/"{chip}_clean.fastq.gz"
+    output:  "clean_fastq/{chip}_clean.fastq.gz"
     log:     "00log/{chip}_clean_fastq"
     threads: 16
     resources: mem_mb=16
@@ -55,7 +96,9 @@ rule clean_fastq:
         """
 
 rule bowtie2_mapping:
-    input: "clean_fastq/{chip}_clean.fastq.gz"
+    input: 
+        "clean_fastq/{chip}_clean.fastq.gz"
+        genome = GENOME
     output:"mapped_reads/{chip}.bam"
     params:idx = "/fdb/igenomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome",
     threads: 16
