@@ -57,10 +57,9 @@ rule clean_fastq:
 rule bowtie2_mapping:
     input: "clean_fastq/{chip}_clean.fastq.gz"
     output:"mapped_reads/{chip}.bam"
-    params:
-        idx = "/fdb/igenomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome",
-        threads: 16
-        resources: mem_mb=16
+    params:idx = "/fdb/igenomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome",
+    threads: 16
+    resources: mem_mb=16
     shell:
         """""
         module load bowtie
