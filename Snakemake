@@ -44,26 +44,18 @@ SAMPLES = glob_wildcards(join(FASTQ_DIR, '{sample,*.R1.fastq.gz'))
 PATTERN_R1 = '{sample}.R1.fastq.gz'
 #PATTERN_R2 = '{sample}.R2.fastq.gz'
 
-################################################################################################################
 
+################################################################################################################
 # Rules -----------------------------------------------------------------------
 
-ruleorder: fastqc > clean_fastq > bowtie2_mapping > flagstat_bam > bedtools_bed > tagdirectory_homer > bigwig_deeptools_1x > bigwig_deeptools_RPKM
-
-rule final:
+DATASETS = ["DEY3_2", "DEY3_6"]
+ 
+rule all:
     input:
-            expand("clean_fastq/{sample}_trimmed.fq.gz", sample=SAMPLES),
-            expand("FQC-Report/{sample}_fastqc.html", sample=SAMPLES),
-            expand("FQC-Report/{sample}_fastqc.zip", sample=SAMPLES),
-            expand("mapped_reads/{sample}_sorted.bam", sample=SAMPLES),
-            expand("mapped_reads/{sample}_sorted.rmdup.bam", sample=SAMPLES),
-            expand("mapped_reads/{sample}_sorted.rmdup.bam.bai", sample=SAMPLES),
-            expand("mapped_reads/{sample}_sorted.rmdup.bam", sample=SAMPLES),
-            expand("Bed_Files/{sample}_sorted_rmdup.bed", sample=SAMPLES),
-            expand("Bed_Files/{sample}_sorted_rmdup", sample=SAMPLES),
-            expand("DeepTools-BigWigs-1xDepth/{sample}_sorted_rmdup.SeqDepthNorm.bw", sample=SAMPLES),
-            expand("DeepTools-BigWigs-RPKM/{sample}_sorted_rmdup.RPKMNorm.bw", sample=SAMPLES),
+        expand("Fastq-Files/{sample}.R1.fastq.gz", sample=DATASETS)
 
+
+ruleorder: fastqc > clean_fastq > bowtie2_mapping > flagstat_bam > bedtools_bed > tagdirectory_homer > bigwig_deeptools_1x > bigwig_deeptools_RPKM
 
 ################################################################################################################
 rule fastqc:
