@@ -30,8 +30,7 @@ rule fastqc:
     output: "FQC-Report/{chip}_fastqc.zip", "FQC-Report/{chip}_fastqc.html"
     log:    "00log/{chip}_fastqc"
     threads: 8
-    resources:
-        mem_mb= 4
+    resources: mem_mb=4
     message: "fastqc {input}: {threads} / {resources.mem_mb}"
     shell:
         """
@@ -45,8 +44,7 @@ rule clean_fastq:
     output:  clean_fastq/"{chip}_clean.fastq.gz"
     log:     "00log/{chip}_clean_fastq"
     threads: 16
-    resources:
-        mem_mb= 16
+    resources: mem_mb=16
     message: "clean_fastq {input}: {threads} threads / {resources.mem_mb}"
     shell:
         """
@@ -62,8 +60,7 @@ rule bowtie2_mapping:
     params:
         idx = "/fdb/igenomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome",
         threads: 16
-        resources:
-        mem_mb= 16
+        resources: mem_mb=16
     shell:
         """""
         module load bowtie
@@ -78,7 +75,7 @@ rule flagstat_bam:
     output: "mapped_reads/{chip}_sorted_rmdup.bam.flagstat"
     log:    "00log/{chip}_sorted_rmdup.flagstat_bam"
     threads: 16
-    resources: mem_mb   = 500
+    resources: mem_mb=500
     message: "flagstat_bam {input}: {threads} threads / {resources.mem_mb}"
     shell:
         """
@@ -91,7 +88,7 @@ rule bedtools_bed:
         output: "../Bed_Files/{chip}_sorted_rmdup.bed"
         log:    "00log/{chip}_sorted_rmdup_bed_log"
         threads: 16
-        resources: mem_mb   = 8
+        resources: mem_mb=8
         message: "bedtools_bed {input}: {threads} threads / {resources.mem_mb}"
         shell:
             """
@@ -104,8 +101,7 @@ rule tagdirectory_homer:
         output: "{chip}_sorted_rmdup"
         log:    "00log/{chip}_sorted_rmdup_mkdir_log"
         threads: 16
-        resources:
-        mem_mb   = 8
+        resources: mem_mb=8
         message: "tagdirectory_homer {input}: {threads} threads / {resources.mem_mb}"
         shell:
             """
@@ -118,7 +114,7 @@ rule bigwig_deeptools_1x:
     output: "../DeepTools-BigWigs-1xDepth/{chip}_sorted_rmdup.SeqDepthNorm.bw"
     log: "00log/{chip}_sorted_rmdup_bigwig_log"
     threads: 32
-    resources: mem_mb= 16
+    resources: mem_mb=16
     message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem_mb}"
     shell:
         """
@@ -132,8 +128,7 @@ rule bigwig_deeptools_RPKM:
     output: "../DeepTools-BigWigs-RPKM/{chip}_sorted_rmdup.RPKMNorm.bw"
     log: "00log/{chip}_sorted_rmdup_bigwig_RPKM_log"
     threads: 32
-    resources:
-    mem_mb= 16
+    resources: mem_mb=16
     message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem_mb}"
     shell:
         """
