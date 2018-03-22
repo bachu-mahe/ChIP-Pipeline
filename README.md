@@ -1,2 +1,4 @@
-# ChIP-Pipeline
+ChIP-Pipeline
+==============
 My Custom Snakemake ChIP-Seq Pipeline
+--
