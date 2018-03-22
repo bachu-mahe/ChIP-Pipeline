@@ -26,14 +26,13 @@ configfile: "config.yaml"
 #
 
 rule fastqc:
-    input:
-    fq = "{chip}.fastq.gz"
+    input:  "{chip}.fastq.gz"
     output: "FQC-Report/{chip}_fastqc.zip", "FQC-Report/{chip}_fastqc.html"
     log:    "00log/{chip}_fastqc"
     threads: 8
     resources:
-        mem= 4 ,
-    message: "fastqc {input}: {threads} / {resources.mem}"
+        mem_mb= 4
+    message: "fastqc {input}: {threads} / {resources.mem_mb}"
     shell:
         """
         module load fastqc
@@ -43,12 +42,12 @@ rule fastqc:
 ## use trimmomatic to trim low quality bases and adaptors
 rule clean_fastq:
     input:   "{chip}.fastq.gz"
-    output:  temp("{chip}_clean.fastq.gz")
+    output:  clean_fastq/"{chip}_clean.fastq.gz"
     log:     "00log/{chip}_clean_fastq"
     threads: 16
     resources:
-        mem= 16,
-    message: "clean_fastq {input}: {threads} threads / {resources.mem}"
+        mem_mb= 16
+    message: "clean_fastq {input}: {threads} threads / {resources.mem_mb}"
     shell:
         """
         module load fastxtoolkit
@@ -58,16 +57,13 @@ rule clean_fastq:
         """
 
 rule bowtie2_mapping:
-    input:
-        idx = "/fdb/igenomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index",
-        fq = temp("{chip}_clean.fastq.gz")
-    output:
-        "mapped_reads/{chip}.bam"
+    input: "clean_fastq/{chip}_clean.fastq.gz"
+    output:"mapped_reads/{chip}.bam"
     params:
         idx = "/fdb/igenomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome",
         threads: 16
         resources:
-        mem= 16,
+        mem_mb= 16
     shell:
         """""
         module load bowtie
@@ -82,9 +78,8 @@ rule flagstat_bam:
     output: "mapped_reads/{chip}_sorted_rmdup.bam.flagstat"
     log:    "00log/{chip}_sorted_rmdup.flagstat_bam"
     threads: 16
-    resources:
-    mem   = 500,
-    message: "flagstat_bam {input}: {threads} threads / {resources.mem}"
+    resources: mem_mb   = 500
+    message: "flagstat_bam {input}: {threads} threads / {resources.mem_mb}"
     shell:
         """
         module load samtools
@@ -96,9 +91,8 @@ rule bedtools_bed:
         output: "../Bed_Files/{chip}_sorted_rmdup.bed"
         log:    "00log/{chip}_sorted_rmdup_bed_log"
         threads: 16
-        resources:
-        mem   = 8,
-        message: "bedtools_bed {input}: {threads} threads / {resources.mem}"
+        resources: mem_mb   = 8
+        message: "bedtools_bed {input}: {threads} threads / {resources.mem_mb}"
         shell:
         """
         module load bedtools
@@ -111,8 +105,8 @@ rule tagdirectory_homer:
         log:    "00log/{chip}_sorted_rmdup_mkdir_log"
         threads: 16
         resources:
-        mem   = 8,
-        message: "tagdirectory_homer {input}: {threads} threads / {resources.mem}"
+        mem_mb   = 8
+        message: "tagdirectory_homer {input}: {threads} threads / {resources.mem_mb}"
         shell:
         """
         module load homer
@@ -124,9 +118,8 @@ rule bigwig_deeptools_1x:
     output: "../DeepTools-BigWigs-1xDepth/{chip}_sorted_rmdup.SeqDepthNorm.bw"
     log: "00log/{chip}_sorted_rmdup_bigwig_log"
     threads: 32
-    resources:
-    mem= 16,
-    message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem}"
+    resources: mem_mb= 16
+    message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem_mb}"
     shell:
     """
     module load deeptools
@@ -140,8 +133,8 @@ rule bigwig_deeptools_RPKM:
     log: "00log/{chip}_sorted_rmdup_bigwig_RPKM_log"
     threads: 32
     resources:
-    mem= 16,
-    message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem}"
+    mem_mb= 16
+    message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem_mb}"
     shell:
     """
     module load deeptools
