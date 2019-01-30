@@ -71,17 +71,14 @@ input:
 
 ################################################################################################################
 rule fastqc:
-    input:  r1 = join(FASTQ_DIR, PATTERN_R1)
+    input:  "r1 = join(FASTQ_DIR, PATTERN_R1)"
     output: "FQC-Report/{chip}_fastqc.zip", "FQC-Report/{chip}_fastqc.html"
     log:    "00log/{chip}_fastqc"
     threads: 8
     resources: mem_mb=4
     message: "fastqc {input}: {threads} / {resources.mem_mb}"
     shell:
-        """
-        module load fastqc
-        fastqc -o FQC-Report -f fastq --noextract {input[0]}
-        """
+        "fastqc -o FQC-Report -f fastq --noextract {input[0]}"
 
 ## use trimmomatic to trim low quality bases and adaptors
 rule clean_fastq:
@@ -101,17 +98,17 @@ rule clean_fastq:
 rule bowtie2_mapping:
     input: 
         "clean_fastq/{chip}_clean.fastq.gz"
-        genome = GENOME
+    genome = GENOME
     output:"mapped_reads/{chip}.bam"
     params:idx = "/home/maheshb/reference_genomes/Homo_sapiens_Ensembl_GRCh37/Bowtie2Index/genome",
     threads: 8
     resources: mem_mb=16
     shell:
-        """""
+        """"
         bowtie2 --sensitive-local -p {threads} --no-unal -x {params.idx} -U ${input.fq} | samtools view -q30 -Sb - > {output}
         cd mapped_reads
         samtools sort -T /tmp/${chip}.bam -o ${chip}_sorted.bam ${chip}.bam && rm ${chip}.bam && samtools rmdup -s ${chip}_sorted.bam ${chip}_sorted_rmdup.bam && rm ${chip}_sorted.bam && samtools index ${j}_sorted_rmdup.bam"
-        """""
+        """"
 
 rule flagstat_bam:
     input:  "mapped_reads/{chip}_sorted_rmdup.bam"
@@ -121,11 +118,10 @@ rule flagstat_bam:
     resources: mem_mb=16
     message: "flagstat_bam {input}: {threads} threads / {resources.mem_mb}"
     shell:
-        """
-        module load samtools
+        ""
         cd mapped_reads
         samtools flagstat {input} > {output} 2> {log}
-        """
+        ""
 rule bedtools_bed:
         input:"mapped_reads/{chip}_sorted_rmdup.bam"
         output: "../Bed_Files/{chip}_sorted_rmdup.bed"
@@ -134,10 +130,10 @@ rule bedtools_bed:
         resources: mem_mb=8
         message: "bedtools_bed {input}: {threads} threads / {resources.mem_mb}"
         shell:
-            """
+            ""
             cd mapped_reads
             bedtools bamtobed -i ${input} > {output}
-            """
+            ""
 rule tagdirectory_homer:
         input:"Bed_Files/{chip}_sorted_rmdup.bed"
         output: "{chip}_sorted_rmdup"
@@ -146,10 +142,10 @@ rule tagdirectory_homer:
         resources: mem_mb=8
         message: "tagdirectory_homer {input}: {threads} threads / {resources.mem_mb}"
         shell:
-            """
+            ""
             cd Bed_Files
             makeTagDirectory ${output}/ ${input} -format bed
-            """
+            ""
 rule bigwig_deeptools_1x:
     input:"mapped_reads/{chip}_sorted_rmdup.bam"
     output: "../DeepTools-BigWigs-1xDepth/{chip}_sorted_rmdup.SeqDepthNorm.bw"
@@ -158,11 +154,10 @@ rule bigwig_deeptools_1x:
     resources: mem_mb=16
     message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem_mb}"
     shell:
-        """
-        module load deeptools
+        ""
         cd mapped_reads
         bamCoverage --bam ${input} -of bigwig -o ${output} --scaleFactor 1 --binSize 10 --normalizeTo1x 2150570000 --ignoreForNormalization chrX chrM --extendReads 150 --centerReads --smoothLength 30
-        """
+        ""
 
 rule bigwig_deeptools_RPKM:
     input:"mapped_reads/{chip}_sorted_rmdup.bam"
@@ -172,9 +167,8 @@ rule bigwig_deeptools_RPKM:
     resources: mem_mb=16
     message: "bigwig_deeptools_1x {input}: {threads} threads / {resources.mem_mb}"
     shell:
-        """
-        module load deeptools
+        ""
         cd mapped_reads
         bamCoverage --bam ${input} -of bigwig -o ${output} --scaleFactor 1 --binSize 10 --normalizeUsingRPKM --ignoreForNormalization chrX chrM --extendReads 150 --centerReads --smoothLength 30
-        """
+        ""
 ```
